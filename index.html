@@ -6,6 +6,60 @@
         <meta name="viewport" content="width=device-width">
         <link rel="stylesheet" href="/css/style.css"/>
         <script src="/js/main.js"></script>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+            }
+            header, main, footer {
+                padding: 20px;
+            }
+            nav a {
+                margin: 0 10px;
+                text-decoration: none;
+                color: #333;
+            }
+            nav a:hover {
+                text-decoration: underline;
+            }
+            #content {
+                max-width: 900px;
+                margin: 0 auto;
+                padding: 20px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+            iframe.pdf-frame {
+                width: 100%;
+                height: 800px;
+                border: none;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                cursor: pointer;
+            }
+            .pdf-container {
+                position: relative;
+                margin: 20px 0;
+                overflow: hidden;
+                border-radius: 8px;
+            }
+            .pdf-controls {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background: rgba(0, 0, 0, 0.5);
+                color: #fff;
+                padding: 5px 10px;
+                border-radius: 5px;
+                cursor: pointer;
+                display: flex;
+                gap: 5px;
+            }
+            .pdf-controls div {
+                padding: 5px 10px;
+                background: rgba(0, 0, 0, 0.7);
+                border-radius: 5px;
+            }
+        </style>
     </head>
     <body>
         <header top>
@@ -39,5 +93,33 @@
 
                 <section id="documentation" style="display:none;">
                     <h2>Documentation</h2>
-                    <iframe src="/assets/testpdf.pdf" width="100%" height="1000"></iframe>
+                    <div class="pdf-container">
+                        <iframe class="pdf-frame" src="/assets/testpdf.pdf" id="pdfViewer"></iframe>
+                        <div class="pdf-controls">
+                            <div id="prevPage">Previous</div>
+                            <div id="nextPage">Next</div>
+                        </div>
+                    </div>
                 </section>
+            </div>
+        </main>
+        <footer footer>
+            <h1 footer>If you encounter any issues or bugs please report them <a href="javascript:void(0);" onclick="showSection('report')" footer>here</a></h1>
+        </footer>
+
+        <script>
+            document.getElementById('prevPage').addEventListener('click', function() {
+                var iframe = document.getElementById('pdfViewer');
+                iframe.contentWindow.PDFViewerApplication.page--;
+            });
+            document.getElementById('nextPage').addEventListener('click', function() {
+                var iframe = document.getElementById('pdfViewer');
+                iframe.contentWindow.PDFViewerApplication.page++;
+            });
+            document.querySelector('.pdf-frame').addEventListener('click', function() {
+                var iframe = document.getElementById('pdfViewer');
+                iframe.contentWindow.PDFViewerApplication.page++;
+            });
+        </script>
+    </body>
+</html>
