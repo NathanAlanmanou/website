@@ -4,7 +4,7 @@ import pandas as pd
 
 app = Flask(__name__)
 
-# Load the saved model
+# Load the saved modeldf
 model = mlflow.pyfunc.load_model("model")
 
 @app.route('/')
