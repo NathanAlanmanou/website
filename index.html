@@ -2,76 +2,43 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Toggleable States Website</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        .navbar {
-            display: flex;
-            justify-content: space-around;
-            background-color: #333;
-        }
-        .navbar a {
-            color: white;
-            padding: 14px 20px;
-            text-decoration: none;
-            text-align: center;
-        }
-        .navbar a:hover {
-            background-color: #ddd;
-            color: black;
-        }
-        .content {
-            display: none;
-        }
-        .content.active {
-            display: block;
-            padding: 20px;
-        }
-        iframe {
-            width: 100%;
-            height: 600px;
-            border: none;
-        }
-    </style>
+    <title>Salary Prediction</title>
 </head>
 <body>
+    <h2>Salary Prediction</h2>
+    <form action="/predict" method="post">
+        <!-- Numerical Inputs -->
+        <label for="age">Age:</label>
+        <input type="number" id="age" name="age" step="0.1"><br><br>
+        
+        <label for="experience">Years of Experience:</label>
+        <input type="number" id="experience" name="experience" step="0.1"><br><br>
 
-<div class="navbar">
-    <a href="#dashboard" onclick="showContent('dashboard')">Dashboard</a>
-    <a href="#model" onclick="showContent('model')">Model</a>
-    <a href="#documentation" onclick="showContent('documentation')">Documentation</a>
-</div>
+        <!-- Categorical Inputs -->
+        <label for="gender">Gender:</label>
+        <select id="gender" name="gender">
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+        </select><br><br>
 
-<div id="dashboard" class="content">
-    <h2>Dashboard</h2>
-    <!-- <iframe src="YOUR_POWERBI_DASHBOARD_URL_HERE"></iframe> -->
-</div>
+        <label for="education">Education Level:</label>
+        <select id="education" name="education">
+            <option value="Bachelor's">Bachelor's</option>
+            <option value="Master's">Master's</option>
+            <option value="PhD">PhD</option>
+        </select><br><br>
 
-<div id="model" class="content">
-    <h2>Model</h2>
-    <!-- <iframe src="YOUR_AZURE_DATABRICKS_AUTOML_WIDGET_URL_HERE"></iframe> -->
-</div>
+        <label for="job_title">Job Title:</label>
+        <select id="job_title" name="job_title">
+            <option value="Software Engineer">Software Engineer</option>
+            <option value="Data Analyst">Data Analyst</option>
+            <option value="Senior Manager">Senior Manager</option>
+            <option value="Sales Associate">Sales Associate</option>
+            <option value="Director">Director</option>
+        </select><br><br>
 
-<div id="documentation" class="content">
-    <h2>Documentation</h2>
-    <iframe src="https://docs.google.com/document/d/1B8uuHZkM8-IJSr69sc8oZlKE_uKrtNPChaxjt5liWos/edit?usp=sharing"></iframe>
-</div>
-
-<script>
-    function showContent(contentId) {
-        var contents = document.querySelectorAll('.content');
-        contents.forEach(function(content) {
-            content.classList.remove('active');
-        });
-        document.getElementById(contentId).classList.add('active');
-    }
-
-    // Show the dashboard by default
-    showContent('dashboard');
-</script>
-
+        <input type="submit" value="Predict">
+    </form>
+    <div id="result"></div>
 </body>
 </html>
