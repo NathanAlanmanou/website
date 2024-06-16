@@ -1,77 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Toggleable States Website</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        .navbar {
-            display: flex;
-            justify-content: space-around;
-            background-color: #333;
-        }
-        .navbar a {
-            color: white;
-            padding: 14px 20px;
-            text-decoration: none;
-            text-align: center;
-        }
-        .navbar a:hover {
-            background-color: #ddd;
-            color: black;
-        }
-        .content {
-            display: none;
-        }
-        .content.active {
-            display: block;
-            padding: 20px;
-        }
-        iframe {
-            width: 100%;
-            height: 600px;
-            border: none;
-        }
-    </style>
-</head>
-<body>
+    <head>
+        <meta charset="UTF-8">
+        <title>A----ws</title>
+        <meta name="viewport" content="width=device-width">
+        <link rel="stylesheet" href="/css/style.css"/>
+        <!-- <script type="module" src="/js/old.js"></script> -->
+        <script src="/js/main.js"></script>
+    </head>
+    <body>
+        <header top>
+            <section main>
+                <div class="container" header>
+                    <div class="info" header>
+                        <h1 header>Project Placeholder</h1>
+                        <!-- <h2 header>Physics and Machine Learning Enthusiast, Aspiring Researcher</h2>
+                        <span header>
+                            Cedar Rapids, Iowa, United States 
+                        </span> -->
+                        <!-- <span header><a href="javascript:void(0);" onclick="showSection('resume')" alt>Resume</a> | <a href="javascript:void(0);" onclick="showSection('cover-letter')" alt>Cover-Letter</a> | <a href="javascript:void(0);" onclick="showSection('transcripts')" alt>Transcripts</a></span> -->
+                        <span header>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+                                <path d="M2 12h20"></path>
+                            </svg>
+                            Cedar Rapids, Iowa, United States 
+                        </span>
 
-<div class="navbar">
-    <a href="#dashboard" onclick="showContent('dashboard')">Dashboard</a>
-    <a href="#model" onclick="showContent('model')">Model</a>
-    <a href="#documentation" onclick="showContent('documentation')">Documentation</a>
-</div>
+                        <span header><a href="javascript:void(0);" onclick="showSection('resume')" alt>Resume</a> | <a href="javascript:void(0);" onclick="showSection('cover-letter')" alt>Cover-Letter</a> | <a href="javascript:void(0);" onclick="showSection('transcripts')" alt>Transcripts</a></span>
 
-<div id="dashboard" class="content">
-    <h2>Dashboard</h2>
-    <!-- <iframe src="YOUR_POWERBI_DASHBOARD_URL_HERE"></iframe> -->
-</div>
+                        <footer class="print" header>nalanmanou@uchicago.edu • https://www.linkedin.com/in/nathan-alanmanou-136a75214/ </footer>
+                    </div>
+                    <figure header>
+                        <!-- <img src="/assets/test.png" alt="Aidan Andrews" importance="high" header> -->
+                    </figure>
+                </div>
+        </header top>
+        <main>
+            <nav>
+                <a href="/dashboard" onclick="showSection('dashboard'); event.preventDefault();">Dashboard</a>
+                <a href="/model" onclick="showSection('model'); event.preventDefault();">Model</a>
+                <a href="/documentation" onclick="showSection('documentation'); event.preventDefault();">Documentation</a>
+            </nav>
 
-<div id="model" class="content">
-    <h2>Model</h2>
-    <!-- <iframe src="YOUR_AZURE_DATABRICKS_AUTOML_WIDGET_URL_HERE"></iframe> -->
-</div>
+            <div id="content">
+                <section id="dashboard" style="display:none;">
+                    <!-- Dashboard content here -->
+                </section>
 
-<div id="documentation" class="content">
-    <h2>Documentation</h2>
-    <iframe src="https://docs.google.com/document/d/1B8uuHZkM8-IJSr69sc8oZlKE_uKrtNPChaxjt5liWos/edit?usp=sharing"></iframe>
-</div>
+                <section id="model" style="display:none;">
+                    <!-- Model content here -->
+                </section>
 
-<script>
-    function showContent(contentId) {
-        var contents = document.querySelectorAll('.content');
-        contents.forEach(function(content) {
-            content.classList.remove('active');
-        });
-        document.getElementById(contentId).classList.add('active');
-    }
-
-    // Show the dashboard by default
-    showContent('dashboard');
-</script>
-
-</body>
-</html>
+                <section id="documentation" style="display:none;">
+                    <h2>Documentation</h2>
+                    <iframe src="/assets/test.pdf" width="100%" height="1000"></iframe>
+                </section>
+                
+                <!-- ///////////////////////////////////////////////////////////////////////////// About /////////////////////////////////////////////////////////////////////////////-->
