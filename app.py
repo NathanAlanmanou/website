@@ -1,40 +1,32 @@
-from flask import Flask, request, jsonify, render_template
-import mlflow.pyfunc
+import streamlit as st
 import pandas as pd
+import joblib
 
-app = Flask(__name__)
+# Load the trained model
+model = joblib.load('/mnt/data/salary_predictor_model.joblib')
 
-# Load the saved modeldf
-model = mlflow.pyfunc.load_model("model")
+# Streamlit app
+st.title('Salary Predictor')
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+# Input fields
+age = st.number_input('Age', min_value=0, max_value=100, value=25)
+gender = st.selectbox('Gender', ['Male', 'Female'])
+education_level = st.selectbox('Education Level', ["Bachelor's", "Master's", 'PhD'])
+job_title = st.text_input('Job Title', 'Software Engineer')
+years_of_experience = st.number_input('Years of Experience', min_value=0, max_value=50, value=5)
 
-@app.route('/predict', methods=['POST'])
-def predict():
-    # Extract features from the request
-    features = {
-        'Age': float(request.form['age']),
-        'Gender': request.form['gender'],
-        'Education Level': request.form['education'],
-        'Job Title': request.form['job_title'],
-        'Years of Experience': float(request.form['experience'])
-    }
+# Prediction
+if st.button('Predict Salary'):
+    input_data = pd.DataFrame({
+        'Age': [age],
+        'Gender': [gender],
+        'Education Level': [education_level],
+        'Job Title': [job_title],
+        'Years of Experience': [years_of_experience]
+    })
     
-    # Convert features to the format required by the model
-    input_data = prepare_input(features)
-    
-    # Get prediction
     prediction = model.predict(input_data)
-    
-    return jsonify({'prediction': prediction.tolist()[0]})
+    st.write(f'Predicted Salary: ${prediction[0]:,.2f}')
 
-def prepare_input(features):
-    # Convert form data into a DataFrame
-    input_df = pd.DataFrame([features])
-    # Ensure the format matches the training data
-    return input_df
-
-if __name__ == "__main__":
-    app.run(debug=True)
+if __name__ == '__main__':
+    st.run()
