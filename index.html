@@ -1,76 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Project Placeholder</title>
-    <meta name="viewport" content="width=device-width">
-    <link rel="stylesheet" href="/css/style.css"/>
-    <script src="/js/main.js"></script>
-</head>
-<body>
-    <header>
-        <div class="container" header>
-            <div class="info" header>
-                <h1>Project Placeholder</h1>
-                <span>
-                    nalanmanou@uchicago.edu • <a href="https://www.linkedin.com/in/nathan-alanmanou-136a75214/">LinkedIn</a>
-                </span>
+    <head>
+        <meta charset="UTF-8">
+        <title>A----ws</title>
+        <meta name="viewport" content="width=device-width">
+        <link rel="stylesheet" href="/css/style.css"/>
+        <script src="/js/main.js"></script>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+            }
+            header, main, footer {
+                padding: 20px;
+            }
+            nav a {
+                margin: 0 10px;
+                text-decoration: none;
+                color: #333;
+            }
+            nav a:hover {
+                text-decoration: underline;
+            }
+            #content {
+                max-width: 900px;
+                margin: 0 auto;
+                padding: 20px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+            iframe.pdf-frame {
+                width: 100%;
+                height: 800px;
+                border: none;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                cursor: pointer;
+            }
+            .pdf-container {
+                position: relative;
+                margin: 20px 0;
+                overflow: hidden;
+                border-radius: 8px;
+            }
+            .pdf-controls {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background: rgba(0, 0, 0, 0.5);
+                color: #fff;
+                padding: 5px 10px;
+                border-radius: 5px;
+                cursor: pointer;
+                display: flex;
+                gap: 5px;
+            }
+            .pdf-controls div {
+                padding: 5px 10px;
+                background: rgba(0, 0, 0, 0.7);
+                border-radius: 5px;
+            }
+        </style>
+    </head>
+    <body>
+        <header top>
+            <section main>
+                <div class="container" header>
+                    <div class="info" header>
+                        <h1 header>Project Placeholder</h1>
+                        <span header>
+                            nalanmanou@uchicago.edu • https://www.linkedin.com/in/nathan-alanmanou-136a75214/
+                        </span>
+                    </div>
+                    <figure header>
+                    </figure>
+                </div>
+        </header top>
+        <main>
+            <nav>
+                <a href="/dashboard" onclick="showSection('dashboard'); event.preventDefault();">Dashboard</a>
+                <a href="/model" onclick="showSection('model'); event.preventDefault();">Model</a>
+                <a href="/documentation" onclick="showSection('documentation'); event.preventDefault();">Documentation</a>
+            </nav>
+
+            <div id="content">
+                <section id="dashboard" style="display:none;">
+                    <!-- Dashboard content here -->
+                </section>
+
+                <section id="model" style="display:none;">
+                    <!-- Model content here -->
+                </section>
+
+                <section id="documentation" style="display:none;">
+                    <h2>Documentation</h2>
+                    <div class="pdf-container">
+                        <iframe class="pdf-frame" src="/assets/testpdf.pdf" id="pdfViewer"></iframe>
+                        <div class="pdf-controls">
+                            <div id="prevPage">Previous</div>
+                            <div id="nextPage">Next</div>
+                        </div>
+                    </div>
+                </section>
             </div>
-            <figure header>
-                <!-- Optional image or logo -->
-            </figure>
-        </div>
-    </header>
-    <main>
-        <nav>
-            <a href="/dashboard" onclick="showSection('dashboard'); event.preventDefault();">Dashboard</a>
-            <a href="/model" onclick="showSection('model'); event.preventDefault();">Model</a>
-            <a href="/documentation" onclick="showSection('documentation'); event.preventDefault();">Documentation</a>
-        </nav>
+        </main>
+        <footer footer>
+            <h1 footer>If you encounter any issues or bugs please report them <a href="javascript:void(0);" onclick="showSection('report')" footer>here</a></h1>
+        </footer>
 
-        <div id="content">
-            <section id="dashboard" style="display:none;">
-                <!-- Dashboard content here -->
-            </section>
-
-            <section id="model" style="display:none;">
-                <h1>Salary Prediction</h1>
-                <form id="salaryForm">
-                    <label for="age">Age:</label>
-                    <input type="number" id="age" name="age" required><br>
-
-                    <label for="gender">Gender:</label>
-                    <select id="gender" name="gender" required>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                    </select><br>
-
-                    <label for="education">Education Level:</label>
-                    <select id="education" name="education" required>
-                        <option value="Bachelor's">Bachelor's</option>
-                        <option value="Master's">Master's</option>
-                        <option value="PhD">PhD</option>
-                    </select><br>
-
-                    <label for="jobTitle">Job Title:</label>
-                    <input type="text" id="jobTitle" name="jobTitle" required><br>
-
-                    <label for="experience">Years of Experience:</label>
-                    <input type="number" id="experience" name="experience" required><br>
-
-                    <button type="submit">Predict Salary</button>
-                </form>
-
-                <h2 id="result"></h2>
-            </section>
-
-            <section id="documentation" style="display:none;">
-                <h2>Documentation</h2>
-                <iframe src="/assets/testpdf.pdf" width="100%" height="1000"></iframe>
-            </section>
-        </div>
-    </main>
-
-    <script src="predict.js"></script>
-</body>
+        <script>
+            document.getElementById('prevPage').addEventListener('click', function() {
+                var iframe = document.getElementById('pdfViewer');
+                iframe.contentWindow.PDFViewerApplication.page--;
+            });
+            document.getElementById('nextPage').addEventListener('click', function() {
+                var iframe = document.getElementById('pdfViewer');
+                iframe.contentWindow.PDFViewerApplication.page++;
+            });
+            document.querySelector('.pdf-frame').addEventListener('click', function() {
+                var iframe = document.getElementById('pdfViewer');
+                iframe.contentWindow.PDFViewerApplication.page++;
+            });
+        </script>
+    </body>
 </html>
