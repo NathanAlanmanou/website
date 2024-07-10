@@ -1,24 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import {
-  ChakraProvider,
-  Box,
-  VStack,
-  Heading,
-  Tabs,
-  TabList,
-  TabPanels,
-  Tab,
-  TabPanel,
-  Input,
-  Select,
-  Grid,
-  GridItem,
-  Text,
-  Flex,
-  HStack,
-  extendTheme,
-} from "@chakra-ui/react";
-import { PieChart, Pie, Cell, ResponsiveContainer, ScatterChart, Scatter, XAxis, YAxis, ZAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
+import {ChakraProvider, Box, VStack, Heading, Tabs, TabList, TabPanels, Tab,
+TabPanel, Input, Select, Grid, GridItem, Text, Flex, HStack, extendTheme,} from "@chakra-ui/react";
+import { PieChart, Pie, Cell, ResponsiveContainer, ScatterChart, Scatter, XAxis, 
+YAxis, ZAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
 import { motion } from "framer-motion";
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC0CB', '#A52A2A', '#DDA0DD', '#FF69B4'];
@@ -138,6 +122,42 @@ function App() {
     setActiveTab(index);
   };
 
+  const renderDateAndMetricWidgets = () => {
+    if (activeTab < 2) {
+      return (
+        <Flex my={4}>
+          <Box flex={1} mr={2}>
+            <Text mb={2}>Start Date</Text>
+            <Input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+          </Box>
+          <Box flex={1} mx={2}>
+            <Text mb={2}>End Date</Text>
+            <Input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </Box>
+          <Box flex={1} ml={2}>
+            <Text mb={2}>Metric</Text>
+            <Select
+              value={selectedMetric}
+              onChange={(e) => setSelectedMetric(e.target.value)}
+            >
+              <option value="amount">Amount</option>
+              <option value="count">Count</option>
+            </Select>
+          </Box>
+        </Flex>
+      );
+    }
+    return null;
+  };
+
   return (
     <ChakraProvider theme={theme}>
       <Box p={4}>
@@ -159,34 +179,7 @@ function App() {
             </Tabs>
           </HStack>
 
-          <Flex my={4}>
-            <Box flex={1} mr={2}>
-              <Text mb={2}>Start Date</Text>
-              <Input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-            </Box>
-            <Box flex={1} mx={2}>
-              <Text mb={2}>End Date</Text>
-              <Input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-            </Box>
-            <Box flex={1} ml={2}>
-              <Text mb={2}>Metric</Text>
-              <Select
-                value={selectedMetric}
-                onChange={(e) => setSelectedMetric(e.target.value)}
-              >
-                <option value="amount">Amount</option>
-                <option value="count">Count</option>
-              </Select>
-            </Box>
-          </Flex>
+          {renderDateAndMetricWidgets()}
 
           <MotionBox
             initial={{ opacity: 0, y: 20 }}
