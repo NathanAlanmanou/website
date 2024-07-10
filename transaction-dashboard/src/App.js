@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ChakraProvider, Box, VStack, Heading, Tabs, TabList, TabPanels, Tab, TabPanel, Input, Select, Grid, GridItem, Text, Flex, HStack, extendTheme, Tooltip } from "@chakra-ui/react";
-import { PieChart, Pie, Cell, ResponsiveContainer, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Legend, Tooltip as RechartsTooltip } from 'recharts';
+import { ChakraProvider, Box, VStack, Heading, Tabs, TabList, Tab, Text, Flex, HStack, extendTheme, Tooltip, Grid, GridItem } from "@chakra-ui/react";
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, Tooltip as RechartsTooltip } from 'recharts';
 import { motion } from "framer-motion";
 import { InfoIcon } from '@chakra-ui/icons';
 import Papa from 'papaparse';
@@ -9,8 +9,15 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'
 
 const MotionBox = motion(Box);
 
-// Custom theme to override Tabs styling
+// Custom theme to override Tabs styling and set background color
 const theme = extendTheme({
+  styles: {
+    global: {
+      body: {
+        bg: "#F5F1EA", // Subtle oat color background
+      },
+    },
+  },
   components: {
     Tabs: {
       baseStyle: {
@@ -23,7 +30,7 @@ const theme = extendTheme({
           },
         },
         tablist: {
-          bg: "#F0F0F0",
+          bg: "#EAE6DF",
           borderRadius: "full",
           p: 1,
         },
@@ -37,8 +44,12 @@ function App() {
   const [filteredData, setFilteredData] = useState([]);
   const [startDate, setStartDate] = useState('2024-06-29T09:46:32');
   const [endDate, setEndDate] = useState('2024-07-01T00:00:00');
-  // const [selectedMetric, setSelectedMetric] = useState('amount');
   const [activeTab, setActiveTab] = useState(0);
+
+  const parseDate = (dateString) => {
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) ? null : date;
+  };
 
   useEffect(() => {
     // Fetch and parse the CSV file
@@ -49,14 +60,15 @@ function App() {
           header: true,
           dynamicTyping: true,
           complete: (result) => {
-            // Convert string dates to Date objects and boolean strings to actual booleans
-            const processedData = result.data.map(item => ({
-              ...item,
-              creation_date: new Date(item.creation_date),
-              last_activity_date: new Date(item.last_activity_date),
-              is_fraud: item.is_fraud === 'True'
-            }));
-            console.log('Processed Data:', processedData); // Debug log
+            const processedData = result.data
+              .filter(item => item.creation_date && item.last_activity_date)
+              .map(item => ({
+                ...item,
+                creation_date: parseDate(item.creation_date),
+                last_activity_date: parseDate(item.last_activity_date),
+                is_fraud: item.is_fraud === 'True'
+              }))
+              .filter(item => item.creation_date && item.last_activity_date);
             setData(processedData);
             setFilteredData(processedData);
           }
@@ -66,13 +78,14 @@ function App() {
   }, []);
 
   useEffect(() => {
+    const start = parseDate(startDate);
+    const end = parseDate(endDate);
+    if (!start || !end) return;
+
     const filtered = data.filter(item => {
-      const itemDate = new Date(item.last_activity_date);
-      const start = startDate ? new Date(startDate) : new Date(0);
-      const end = endDate ? new Date(endDate) : new Date(8640000000000000); // Max date
+      const itemDate = item.last_activity_date;
       return itemDate >= start && itemDate <= end;
     });
-    console.log('Filtered Data:', filtered); // Debug log
     setFilteredData(filtered);
   }, [startDate, endDate, data]);
 
@@ -112,13 +125,30 @@ function App() {
     };
   };
 
-  const getScatterData = () => {
-    return filteredData.map(item => ({
-      x: item.amount,
-      y: item.oldBalanceOrig,
-      fill: item.is_fraud ? 'red' : '#90EE90', // dull green if not fraud
-      name: item.country
-    }));
+  const getStackedBarData = () => {
+    const hourlyData = {};
+    const start = parseDate(startDate);
+    const end = parseDate(endDate);
+
+    if (!start || !end) return [];
+
+    for (let d = new Date(start); d <= end; d.setHours(d.getHours() + 1)) {
+      const key = d.toISOString().slice(0, 13); // Group by hour
+      hourlyData[key] = { normal: 0, fraud: 0, date: new Date(d) };
+    }
+
+    filteredData.forEach(item => {
+      const hour = item.last_activity_date.toISOString().slice(0, 13);
+      if (hourlyData[hour]) {
+        if (item.is_fraud) {
+          hourlyData[hour].fraud += 1;
+        } else {
+          hourlyData[hour].normal += 1;
+        }
+      }
+    });
+
+    return Object.values(hourlyData);
   };
 
   const handleTabChange = (index) => {
@@ -126,41 +156,29 @@ function App() {
   };
 
   const renderDateWidgets = () => {
-    if (activeTab < 2) {
-      return (
-        <Flex my={4}>
-          <Box flex={1} mr={2}>
-            <Text mb={2}>Start Date</Text>
-            <Input
-              type="datetime-local"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
-          </Box>
-          <Box flex={1} mx={2}>
-            <Text mb={2}>End Date</Text>
-            <Input
-              type="datetime-local"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-            />
-          </Box>
-          {/* Metric Widget commented out
-          <Box flex={1} ml={2}>
-            <Text mb={2}>Metric</Text>
-            <Select
-              value={selectedMetric}
-              onChange={(e) => setSelectedMetric(e.target.value)}
-            >
-              <option value="amount">Amount</option>
-              <option value="count">Count</option>
-            </Select>
-          </Box>
-          */}
-        </Flex>
-      );
-    }
-    return null;
+    return (
+      <Flex align="center">
+        <Text mr={2}>Start Date</Text>
+        <input
+          type="datetime-local"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          style={{padding: '8px', borderRadius: '4px', border: '1px solid #ccc', marginRight: '16px'}}
+        />
+        <Text mr={2}>End Date</Text>
+        <input
+          type="datetime-local"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          style={{padding: '8px', borderRadius: '4px', border: '1px solid #ccc'}}
+        />
+      </Flex>
+    );
+  };
+
+  const formatXAxisTick = (tickItem) => {
+    const date = new Date(tickItem);
+    return date.toLocaleString('en-US', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
   };
 
   return (
@@ -174,22 +192,21 @@ function App() {
             </Tooltip>
           </Flex>
           
-          <HStack spacing={4} align="start" justifyContent="space-between">
+          <Flex justify="space-between" align="center">
             <Tabs variant="soft-rounded" colorScheme="gray" size="md" index={activeTab} onChange={handleTabChange}>
               <TabList>
                 <Tab>Fraud Insights</Tab>
                 <Tab>Transactions</Tab>
               </TabList>
             </Tabs>
+            {renderDateWidgets()}
             <Tabs variant="soft-rounded" colorScheme="gray" size="md" index={activeTab - 2} onChange={(index) => handleTabChange(index + 2)}>
               <TabList>
                 <Tab>Model</Tab>
                 <Tab>Documentation</Tab>
               </TabList>
             </Tabs>
-          </HStack>
-
-          {renderDateWidgets()}
+          </Flex>
 
           <MotionBox
             initial={{ opacity: 0, y: 20 }}
@@ -198,56 +215,79 @@ function App() {
             transition={{ duration: 0.3 }}
           >
             {activeTab === 0 && (
-              <VStack spacing={4} align="stretch">
-                <Box p={4} borderWidth={1} borderRadius="lg">
+              <Grid templateColumns="1fr 3fr" gap={4}>
+                <VStack spacing={4}>
+                  <Box p={4} borderWidth={1} borderRadius="lg" w="100%" bg="white">
+                    <Heading as="h3" size="md" mb={2}>Fraud Transactions</Heading>
+                    <Text fontSize="3xl" fontWeight="bold">{getFraudStats().count}</Text>
+                  </Box>
+                  <Box p={4} borderWidth={1} borderRadius="lg" w="100%" bg="white">
+                    <Heading as="h3" size="md" mb={2}>Total Fraud Amount</Heading>
+                    <Text fontSize="3xl" fontWeight="bold">{getFraudStats().amount}</Text>
+                  </Box>
+                  <Box p={4} borderWidth={1} borderRadius="lg" w="100%" bg="white">
+                    <Heading as="h3" size="md" mb={2}>Fraud Percentage</Heading>
+                    <Text fontSize="3xl" fontWeight="bold">{getFraudStats().percentage}%</Text>
+                  </Box>
+                </VStack>
+                <Box p={4} borderWidth={1} borderRadius="lg" bg="white">
                   <Flex justify="space-between" align="center" mb={2}>
-                    <Heading as="h3" size="md">Reported Transactions</Heading>
-                    <Text fontSize="sm" color="gray.500" fontStyle="italic">last refreshed July 1st 12:00:00 AM</Text>
+                    <Box flex={1} /> {/* This empty box pushes the title to the center */}
+                    <Heading as="h3" size="md" textAlign="center" flex={2}>Reported Transactions</Heading>
+                    <Text fontSize="sm" color="gray.500" fontStyle="italic" flex={1} textAlign="right">
+                      last refreshed July 1st 12:00:00 AM
+                    </Text>
                   </Flex>
                   <Box height="400px">
                     <ResponsiveContainer width="100%" height="100%">
-                      <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                        <CartesianGrid />
-                        <XAxis type="number" dataKey="x" name="Amount" unit="$" label={{ value: "Transaction Amount", position: "bottom" }} />
-                        <YAxis type="number" dataKey="y" name="Original Balance" label={{ value: "Original Balance", angle: -90, position: "left" }} />
-                        <RechartsTooltip cursor={{ strokeDasharray: '3 3' }} />
-                        <Legend payload={[
-                          { value: 'Fraudulent', type: 'circle', color: 'red' },
-                          { value: 'Normal', type: 'circle', color: '#90EE90' }
-                        ]}/>
-                        <Scatter name="Transactions" data={getScatterData()} fill="#8884d8" shape="circle" />
-                      </ScatterChart>
+                      <BarChart data={getStackedBarData()} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis 
+                          dataKey="date" 
+                          tickFormatter={formatXAxisTick}
+                          angle={-45} 
+                          textAnchor="end" 
+                          height={60} 
+                        />
+                        <YAxis />
+                        <RechartsTooltip />
+                        <Bar dataKey="normal" stackId="a" fill="#90EE90" name="Normal" />
+                        <Bar dataKey="fraud" stackId="a" fill="red" name="Fraudulent" />
+                      </BarChart>
                     </ResponsiveContainer>
                   </Box>
+                  <Flex justify="center" mt={2}>
+                    <Box borderRadius="full" bg="gray.100" px={4} py={2}>
+                      <Legend />
+                    </Box>
+                  </Flex>
                 </Box>
-                <Grid templateColumns="repeat(3, 1fr)" gap={4}>
-                  <GridItem>
-                    <Box p={4} borderWidth={1} borderRadius="lg">
-                      <Heading as="h3" size="md" mb={2}>Fraud Transactions</Heading>
-                      <Text fontSize="3xl" fontWeight="bold">{getFraudStats().count}</Text>
-                    </Box>
-                  </GridItem>
-                  <GridItem>
-                    <Box p={4} borderWidth={1} borderRadius="lg">
-                      <Heading as="h3" size="md" mb={2}>Total Fraud Amount</Heading>
-                      <Text fontSize="3xl" fontWeight="bold">{getFraudStats().amount}</Text>
-                    </Box>
-                  </GridItem>
-                  <GridItem>
-                    <Box p={4} borderWidth={1} borderRadius="lg">
-                      <Heading as="h3" size="md" mb={2}>Fraud Percentage</Heading>
-                      <Text fontSize="3xl" fontWeight="bold">{getFraudStats().percentage}%</Text>
-                    </Box>
-                  </GridItem>
-                </Grid>
-              </VStack>
+              </Grid>
             )}
 
             {activeTab === 1 && (
-              <VStack spacing={4} align="stretch">
-                <Box p={4} borderWidth={1} borderRadius="lg">
+              <Grid templateColumns="1fr 2fr" gap={4}>
+                <VStack spacing={4}>
+                  <Box p={4} borderWidth={1} borderRadius="lg" w="100%" bg="white">
+                    <Heading as="h2" size="md" mb={2}>Total Transaction Amount</Heading>
+                    <Text fontSize="3xl" fontWeight="bold">{getTotalAmount()}</Text>
+                  </Box>
+                  <Box p={4} borderWidth={1} borderRadius="lg" w="100%" bg="white">
+                    <Heading as="h2" size="md" mb={2}>Average Transaction Amount</Heading>
+                    <Text fontSize="3xl" fontWeight="bold">{getAverageAmount()}</Text>
+                  </Box>
+                  <Box p={4} borderWidth={1} borderRadius="lg" w="100%" bg="white">
+                    <Heading as="h2" size="md" mb={2}>Total Transactions</Heading>
+                    <Text fontSize="3xl" fontWeight="bold">{filteredData.length}</Text>
+                  </Box>
+                  <Box p={4} borderWidth={1} borderRadius="lg" w="100%" bg="white">
+                    <Heading as="h2" size="md" mb={2}>Unique Countries</Heading>
+                    <Text fontSize="3xl" fontWeight="bold">{new Set(filteredData.map(item => item.country)).size}</Text>
+                  </Box>
+                </VStack>
+                <Box p={4} borderWidth={1} borderRadius="lg" bg="white">
                   <Heading as="h2" size="md" mb={2}>Transaction Types Distribution</Heading>
-                  <Box height="300px">
+                  <Box height="400px">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
@@ -256,7 +296,7 @@ function App() {
                           nameKey="name"
                           cx="50%"
                           cy="50%"
-                          outerRadius={80}
+                          outerRadius={150}
                           fill="#8884d8"
                           label
                         >
@@ -270,44 +310,18 @@ function App() {
                     </ResponsiveContainer>
                   </Box>
                 </Box>
-                <Grid templateColumns="repeat(4, 1fr)" gap={4}>
-                  <GridItem>
-                    <Box p={4} borderWidth={1} borderRadius="lg">
-                      <Heading as="h2" size="md" mb={2}>Total Transaction Amount</Heading>
-                      <Text fontSize="3xl" fontWeight="bold">{getTotalAmount()}</Text>
-                    </Box>
-                  </GridItem>
-                  <GridItem>
-                    <Box p={4} borderWidth={1} borderRadius="lg">
-                      <Heading as="h2" size="md" mb={2}>Average Transaction Amount</Heading>
-                      <Text fontSize="3xl" fontWeight="bold">{getAverageAmount()}</Text>
-                    </Box>
-                  </GridItem>
-                  <GridItem>
-                    <Box p={4} borderWidth={1} borderRadius="lg">
-                      <Heading as="h2" size="md" mb={2}>Total Transactions</Heading>
-                      <Text fontSize="3xl" fontWeight="bold">{filteredData.length}</Text>
-                    </Box>
-                  </GridItem>
-                  <GridItem>
-                    <Box p={4} borderWidth={1} borderRadius="lg">
-                      <Heading as="h2" size="md" mb={2}>Unique Countries</Heading>
-                      <Text fontSize="3xl" fontWeight="bold">{new Set(filteredData.map(item => item.country)).size}</Text>
-                    </Box>
-                  </GridItem>
-                </Grid>
-              </VStack>
+              </Grid>
             )}
 
             {activeTab === 2 && (
-              <Box p={4} borderWidth={1} borderRadius="lg">
+              <Box p={4} borderWidth={1} borderRadius="lg" bg="white">
                 <Heading as="h2" size="md" mb={2}>Model Information</Heading>
                 <Text>This tab is currently blank and will contain model information in the future.</Text>
               </Box>
             )}
 
             {activeTab === 3 && (
-              <Box p={4} borderWidth={1} borderRadius="lg">
+              <Box p={4} borderWidth={1} borderRadius="lg" bg="white">
                 <Heading as="h2" size="md" mb={2}>Documentation</Heading>
                 <Text>This tab is currently blank and will contain documentation in the future.</Text>
               </Box>
