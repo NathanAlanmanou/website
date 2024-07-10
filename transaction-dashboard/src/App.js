@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import {ChakraProvider, Box, VStack, Heading, Tabs, TabList, TabPanels, Tab,
-TabPanel, Input, Select, Grid, GridItem, Text, Flex, HStack, extendTheme,} from "@chakra-ui/react";
-import { PieChart, Pie, Cell, ResponsiveContainer, ScatterChart, Scatter, XAxis, 
-YAxis, ZAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
+import { ChakraProvider, Box, VStack, Heading, Tabs, TabList, TabPanels, Tab, TabPanel, Input, Select, Grid, GridItem, Text, Flex, HStack, extendTheme, Tooltip } from "@chakra-ui/react";
+import { PieChart, Pie, Cell, ResponsiveContainer, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Legend, Tooltip as RechartsTooltip } from 'recharts';
 import { motion } from "framer-motion";
+import { InfoIcon } from '@chakra-ui/icons';
+import Papa from 'papaparse';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC0CB', '#A52A2A', '#DDA0DD', '#FF69B4'];
 
@@ -35,41 +35,34 @@ const theme = extendTheme({
 function App() {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [selectedMetric, setSelectedMetric] = useState('amount');
+  const [startDate, setStartDate] = useState('2024-06-29T09:46:32');
+  const [endDate, setEndDate] = useState('2024-07-01T00:00:00');
+  // const [selectedMetric, setSelectedMetric] = useState('amount');
   const [activeTab, setActiveTab] = useState(0);
 
   useEffect(() => {
-    // In a real application, you would fetch the data from an API or database
-    const dummyData = [
-      {
-        id: '1', amount: 3398.73, customer_id: 'C001', isUnauthorizedOverdraft: 0,
-        nameDest: 'DestUser1', nameOrig: 'OrigUser1', newBalanceDest: 10000, newBalanceOrig: 5000,
-        oldBalanceDest: 9000, oldBalanceOrig: 8398.73, step: 1, type: 'PAYMENT',
-        diffOrig: 3398.73, diffDest: 1000, firstname: 'John', lastname: 'Doe',
-        email: 'john@example.com', address: '123 Main St', country: 'USA',
-        last_country_logged: 'USA', creation_date: '2023-01-01', last_activity_date: '2023-07-08',
-        age_group: 2, is_fraud: false, countryOrig: 'US', countryOrig_name: 'United States',
-        countryLongOrig_long: -95.7129, countryLatOrig_lat: 37.0902,
-        countryDest: 'CA', countryDest_name: 'Canada',
-        countryLongDest_long: -106.3468, countryLatDest_lat: 56.1304
-      },
-      {
-        id: '2', amount: 50000.00, customer_id: 'C002', isUnauthorizedOverdraft: 1,
-        nameDest: 'DestUser2', nameOrig: 'OrigUser2', newBalanceDest: 75000, newBalanceOrig: 0,
-        oldBalanceDest: 25000, oldBalanceOrig: 50000, step: 2, type: 'TRANSFER',
-        diffOrig: 50000, diffDest: 50000, firstname: 'Jane', lastname: 'Smith',
-        email: 'jane@example.com', address: '456 Elm St', country: 'UK',
-        last_country_logged: 'FR', creation_date: '2022-06-15', last_activity_date: '2023-07-09',
-        age_group: 3, is_fraud: true, countryOrig: 'GB', countryOrig_name: 'United Kingdom',
-        countryLongOrig_long: -3.4359, countryLatOrig_lat: 55.3781,
-        countryDest: 'FR', countryDest_name: 'France',
-        countryLongDest_long: 2.2137, countryLatDest_lat: 46.2276
-      }
-    ];
-    setData(dummyData);
-    setFilteredData(dummyData);
+    // Fetch and parse the CSV file
+    fetch('/transactions refreshed 7-1.csv')
+      .then(response => response.text())
+      .then(csvString => {
+        Papa.parse(csvString, {
+          header: true,
+          dynamicTyping: true,
+          complete: (result) => {
+            // Convert string dates to Date objects and boolean strings to actual booleans
+            const processedData = result.data.map(item => ({
+              ...item,
+              creation_date: new Date(item.creation_date),
+              last_activity_date: new Date(item.last_activity_date),
+              is_fraud: item.is_fraud === 'True'
+            }));
+            console.log('Processed Data:', processedData); // Debug log
+            setData(processedData);
+            setFilteredData(processedData);
+          }
+        });
+      })
+      .catch(error => console.error('Error loading CSV:', error));
   }, []);
 
   useEffect(() => {
@@ -79,8 +72,16 @@ function App() {
       const end = endDate ? new Date(endDate) : new Date(8640000000000000); // Max date
       return itemDate >= start && itemDate <= end;
     });
+    console.log('Filtered Data:', filtered); // Debug log
     setFilteredData(filtered);
   }, [startDate, endDate, data]);
+
+  const formatAmount = (amount) => {
+    if (amount >= 100000) {
+      return `$${(amount / 1000000).toFixed(2)} M`;
+    }
+    return `$${amount.toFixed(2)}`;
+  };
 
   const getTransactionTypes = () => {
     const typeData = filteredData.reduce((acc, item) => {
@@ -91,11 +92,13 @@ function App() {
   };
 
   const getTotalAmount = () => {
-    return filteredData.reduce((sum, item) => sum + item.amount, 0).toFixed(2);
+    const total = filteredData.reduce((sum, item) => sum + item.amount, 0);
+    return formatAmount(total);
   };
 
   const getAverageAmount = () => {
-    return (filteredData.reduce((sum, item) => sum + item.amount, 0) / filteredData.length).toFixed(2);
+    const avg = filteredData.reduce((sum, item) => sum + item.amount, 0) / filteredData.length;
+    return formatAmount(avg);
   };
 
   const getFraudStats = () => {
@@ -104,7 +107,7 @@ function App() {
     const fraudPercentage = (fraudTransactions.length / filteredData.length) * 100;
     return {
       count: fraudTransactions.length,
-      amount: totalFraudAmount.toFixed(2),
+      amount: formatAmount(totalFraudAmount),
       percentage: fraudPercentage.toFixed(2)
     };
   };
@@ -112,8 +115,8 @@ function App() {
   const getScatterData = () => {
     return filteredData.map(item => ({
       x: item.amount,
-      y: item.diffOrig,
-      z: item.is_fraud ? 100 : 50,
+      y: item.oldBalanceOrig,
+      fill: item.is_fraud ? 'red' : '#90EE90', // dull green if not fraud
       name: item.country
     }));
   };
@@ -122,14 +125,14 @@ function App() {
     setActiveTab(index);
   };
 
-  const renderDateAndMetricWidgets = () => {
+  const renderDateWidgets = () => {
     if (activeTab < 2) {
       return (
         <Flex my={4}>
           <Box flex={1} mr={2}>
             <Text mb={2}>Start Date</Text>
             <Input
-              type="date"
+              type="datetime-local"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
             />
@@ -137,11 +140,12 @@ function App() {
           <Box flex={1} mx={2}>
             <Text mb={2}>End Date</Text>
             <Input
-              type="date"
+              type="datetime-local"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
             />
           </Box>
+          {/* Metric Widget commented out
           <Box flex={1} ml={2}>
             <Text mb={2}>Metric</Text>
             <Select
@@ -152,6 +156,7 @@ function App() {
               <option value="count">Count</option>
             </Select>
           </Box>
+          */}
         </Flex>
       );
     }
@@ -162,7 +167,12 @@ function App() {
     <ChakraProvider theme={theme}>
       <Box p={4}>
         <VStack spacing={4} align="stretch">
-          <Heading as="h1" size="xl">Transaction Dashboard</Heading>
+          <Flex align="center">
+            <Heading as="h1" size="xl">Transaction Dashboard</Heading>
+            <Tooltip label="A subset of the transactions is used to reduce compute costs" placement="right">
+              <InfoIcon ml={2} color="gray.500" />
+            </Tooltip>
+          </Flex>
           
           <HStack spacing={4} align="start" justifyContent="space-between">
             <Tabs variant="soft-rounded" colorScheme="gray" size="md" index={activeTab} onChange={handleTabChange}>
@@ -179,7 +189,7 @@ function App() {
             </Tabs>
           </HStack>
 
-          {renderDateAndMetricWidgets()}
+          {renderDateWidgets()}
 
           <MotionBox
             initial={{ opacity: 0, y: 20 }}
@@ -190,17 +200,22 @@ function App() {
             {activeTab === 0 && (
               <VStack spacing={4} align="stretch">
                 <Box p={4} borderWidth={1} borderRadius="lg">
-                  <Heading as="h3" size="md" mb={2}>Transaction Amount vs Balance Difference</Heading>
+                  <Flex justify="space-between" align="center" mb={2}>
+                    <Heading as="h3" size="md">Reported Transactions</Heading>
+                    <Text fontSize="sm" color="gray.500" fontStyle="italic">last refreshed July 1st 12:00:00 AM</Text>
+                  </Flex>
                   <Box height="400px">
                     <ResponsiveContainer width="100%" height="100%">
                       <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                         <CartesianGrid />
-                        <XAxis type="number" dataKey="x" name="Amount" unit="$" />
-                        <YAxis type="number" dataKey="y" name="Balance Difference" unit="$" />
-                        <ZAxis type="number" dataKey="z" range={[50, 400]} name="Fraud" unit="" />
-                        <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-                        <Legend />
-                        <Scatter name="Transactions" data={getScatterData()} fill="#8884d8" />
+                        <XAxis type="number" dataKey="x" name="Amount" unit="$" label={{ value: "Transaction Amount", position: "bottom" }} />
+                        <YAxis type="number" dataKey="y" name="Original Balance" label={{ value: "Original Balance", angle: -90, position: "left" }} />
+                        <RechartsTooltip cursor={{ strokeDasharray: '3 3' }} />
+                        <Legend payload={[
+                          { value: 'Fraudulent', type: 'circle', color: 'red' },
+                          { value: 'Normal', type: 'circle', color: '#90EE90' }
+                        ]}/>
+                        <Scatter name="Transactions" data={getScatterData()} fill="#8884d8" shape="circle" />
                       </ScatterChart>
                     </ResponsiveContainer>
                   </Box>
@@ -215,7 +230,7 @@ function App() {
                   <GridItem>
                     <Box p={4} borderWidth={1} borderRadius="lg">
                       <Heading as="h3" size="md" mb={2}>Total Fraud Amount</Heading>
-                      <Text fontSize="3xl" fontWeight="bold">${getFraudStats().amount}</Text>
+                      <Text fontSize="3xl" fontWeight="bold">{getFraudStats().amount}</Text>
                     </Box>
                   </GridItem>
                   <GridItem>
@@ -249,7 +264,7 @@ function App() {
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
                         </Pie>
-                        <Tooltip />
+                        <RechartsTooltip />
                         <Legend />
                       </PieChart>
                     </ResponsiveContainer>
@@ -259,13 +274,13 @@ function App() {
                   <GridItem>
                     <Box p={4} borderWidth={1} borderRadius="lg">
                       <Heading as="h2" size="md" mb={2}>Total Transaction Amount</Heading>
-                      <Text fontSize="3xl" fontWeight="bold">${getTotalAmount()}</Text>
+                      <Text fontSize="3xl" fontWeight="bold">{getTotalAmount()}</Text>
                     </Box>
                   </GridItem>
                   <GridItem>
                     <Box p={4} borderWidth={1} borderRadius="lg">
                       <Heading as="h2" size="md" mb={2}>Average Transaction Amount</Heading>
-                      <Text fontSize="3xl" fontWeight="bold">${getAverageAmount()}</Text>
+                      <Text fontSize="3xl" fontWeight="bold">{getAverageAmount()}</Text>
                     </Box>
                   </GridItem>
                   <GridItem>
