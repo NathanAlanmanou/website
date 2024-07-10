@@ -156,24 +156,27 @@ function App() {
   };
 
   const renderDateWidgets = () => {
-    return (
-      <Flex align="center">
-        <Text mr={2}>Start Date</Text>
-        <input
-          type="datetime-local"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          style={{padding: '8px', borderRadius: '4px', border: '1px solid #ccc', marginRight: '16px'}}
-        />
-        <Text mr={2}>End Date</Text>
-        <input
-          type="datetime-local"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          style={{padding: '8px', borderRadius: '4px', border: '1px solid #ccc'}}
-        />
-      </Flex>
-    );
+    if (activeTab < 2) {
+      return (
+        <Flex align="center">
+          <Text mr={2}>Start Date</Text>
+          <input
+            type="datetime-local"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            style={{padding: '8px', borderRadius: '4px', border: '1px solid #ccc', marginRight: '16px'}}
+          />
+          <Text mr={2}>End Date</Text>
+          <input
+            type="datetime-local"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            style={{padding: '8px', borderRadius: '4px', border: '1px solid #ccc'}}
+          />
+        </Flex>
+      );
+    }
+    return null;
   };
 
   const formatXAxisTick = (tickItem) => {
@@ -323,7 +326,15 @@ function App() {
             {activeTab === 3 && (
               <Box p={4} borderWidth={1} borderRadius="lg" bg="white">
                 <Heading as="h2" size="md" mb={2}>Documentation</Heading>
-                <Text>This tab is currently blank and will contain documentation in the future.</Text>
+                <Box height="600px" width="100%">
+                  <iframe
+                    src="/placeholder.pdf"
+                    width="100%"
+                    height="100%"
+                    style={{ border: "none" }}
+                    title="Documentation PDF"
+                  />
+                </Box>
               </Box>
             )}
           </MotionBox>
