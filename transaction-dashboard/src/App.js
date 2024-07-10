@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChakraProvider, Box, VStack, Heading, Tabs, TabList, Tab, Text, Flex, HStack, extendTheme, Tooltip, Grid, GridItem } from "@chakra-ui/react";
+import { ChakraProvider, Box, VStack, Heading, Tabs, TabList, Tab, Text, Flex, extendTheme, Tooltip, Grid, Image } from "@chakra-ui/react";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, Tooltip as RechartsTooltip } from 'recharts';
 import { motion } from "framer-motion";
 import { InfoIcon } from '@chakra-ui/icons';
@@ -319,7 +319,14 @@ function App() {
             {activeTab === 2 && (
               <Box p={4} borderWidth={1} borderRadius="lg" bg="white">
                 <Heading as="h2" size="md" mb={2}>Model Information</Heading>
-                <Text>This tab is currently blank and will contain model information in the future.</Text>
+                <Text>Model will be integrated here soon. More on the model in the Documentation.</Text>
+                {/* <Image 
+                    src="/model demonstration.gif" 
+                    alt="Model Demonstration"
+                    maxWidth="100%"
+                    maxHeight="600px"
+                    objectFit="contain"
+                  /> */}
               </Box>
             )}
 
