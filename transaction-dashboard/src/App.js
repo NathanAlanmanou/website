@@ -2,53 +2,59 @@ import React, { useState, useEffect } from 'react';
 import {
   ChakraProvider,
   Box,
+  VStack,
   Heading,
-  Flex,
-  Button,
+  Tabs,
+  TabList,
+  TabPanels,
+  Tab,
+  TabPanel,
   Input,
   Select,
-  Text,
-  VStack,
-  HStack,
   Grid,
   GridItem,
-  useStyleConfig,
-  Spinner,
+  Text,
+  Flex,
+  HStack,
+  extendTheme,
 } from "@chakra-ui/react";
-import { motion, AnimatePresence } from "framer-motion";
 import { PieChart, Pie, Cell, ResponsiveContainer, ScatterChart, Scatter, XAxis, YAxis, ZAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
+import { motion } from "framer-motion";
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC0CB', '#A52A2A', '#DDA0DD', '#FF69B4'];
 
 const MotionBox = motion(Box);
 
-const CustomTab = ({ children, isSelected, onClick }) => {
-  const styles = useStyleConfig("Button", { variant: "outline" });
-  return (
-    <Button
-      {...styles}
-      onClick={onClick}
-      borderRadius="full"
-      bg={isSelected ? "white" : "gray.100"}
-      borderColor={isSelected ? "gray.300" : "transparent"}
-      boxShadow={isSelected ? "md" : "none"}
-      _hover={{ bg: "white" }}
-    >
-      {children}
-    </Button>
-  );
-};
+// Custom theme to override Tabs styling
+const theme = extendTheme({
+  components: {
+    Tabs: {
+      baseStyle: {
+        tab: {
+          borderRadius: "full",
+          _selected: {
+            color: "black",
+            bg: "white",
+            boxShadow: "md",
+          },
+        },
+        tablist: {
+          bg: "#F0F0F0",
+          borderRadius: "full",
+          p: 1,
+        },
+      },
+    },
+  },
+});
 
-const Dashboard = () => {
+function App() {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selectedMetric, setSelectedMetric] = useState('amount');
-  const [activeTab, setActiveTab] = useState('fraud');
-  const [numPages, setNumPages] = useState(null);
-  const [pageNumber, setPageNumber] = useState(1);
-  const [pdfError, setPdfError] = useState(null);
+  const [activeTab, setActiveTab] = useState(0);
 
   useEffect(() => {
     // In a real application, you would fetch the data from an API or database
@@ -128,220 +134,181 @@ const Dashboard = () => {
     }));
   };
 
-  function onDocumentLoadSuccess({ numPages }) {
-    setNumPages(numPages);
-    setPdfError(null);
-  }
-
-  function onDocumentLoadError(error) {
-    console.error('Error while loading document:', error);
-    setPdfError('Failed to load PDF. Please try again later.');
-  }
+  const handleTabChange = (index) => {
+    setActiveTab(index);
+  };
 
   return (
-    <ChakraProvider>
+    <ChakraProvider theme={theme}>
       <Box p={4}>
         <VStack spacing={4} align="stretch">
           <Heading as="h1" size="xl">Transaction Dashboard</Heading>
           
-          <Flex justify="space-between">
-            <HStack spacing={2} bg="gray.100" p={1} borderRadius="full">
-              <CustomTab
-                isSelected={activeTab === 'fraud'}
-                onClick={() => setActiveTab('fraud')}
+          <HStack spacing={4} align="start" justifyContent="space-between">
+            <Tabs variant="soft-rounded" colorScheme="gray" size="md" index={activeTab} onChange={handleTabChange}>
+              <TabList>
+                <Tab>Fraud Insights</Tab>
+                <Tab>Transactions</Tab>
+              </TabList>
+            </Tabs>
+            <Tabs variant="soft-rounded" colorScheme="gray" size="md" index={activeTab - 2} onChange={(index) => handleTabChange(index + 2)}>
+              <TabList>
+                <Tab>Model</Tab>
+                <Tab>Documentation</Tab>
+              </TabList>
+            </Tabs>
+          </HStack>
+
+          <Flex my={4}>
+            <Box flex={1} mr={2}>
+              <Text mb={2}>Start Date</Text>
+              <Input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </Box>
+            <Box flex={1} mx={2}>
+              <Text mb={2}>End Date</Text>
+              <Input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </Box>
+            <Box flex={1} ml={2}>
+              <Text mb={2}>Metric</Text>
+              <Select
+                value={selectedMetric}
+                onChange={(e) => setSelectedMetric(e.target.value)}
               >
-                Fraud Insights
-              </CustomTab>
-              <CustomTab
-                isSelected={activeTab === 'transactions'}
-                onClick={() => setActiveTab('transactions')}
-              >
-                Transactions
-              </CustomTab>
-            </HStack>
-            <HStack spacing={2} bg="gray.100" p={1} borderRadius="full">
-              <CustomTab
-                isSelected={activeTab === 'model'}
-                onClick={() => setActiveTab('model')}
-              >
-                Model
-              </CustomTab>
-              <CustomTab
-                isSelected={activeTab === 'documentation'}
-                onClick={() => setActiveTab('documentation')}
-              >
-                Documentation
-              </CustomTab>
-            </HStack>
+                <option value="amount">Amount</option>
+                <option value="count">Count</option>
+              </Select>
+            </Box>
           </Flex>
 
-          {(activeTab === 'fraud' || activeTab === 'transactions') && (
-            <Flex my={4} gap={4}>
-              <Box flex={1}>
-                <Text mb={2}>Start Date</Text>
-                <Input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                />
-              </Box>
-              <Box flex={1}>
-                <Text mb={2}>End Date</Text>
-                <Input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                />
-              </Box>
-              <Box flex={1}>
-                <Text mb={2}>Metric</Text>
-                <Select
-                  value={selectedMetric}
-                  onChange={(e) => setSelectedMetric(e.target.value)}
-                >
-                  <option value="amount">Amount</option>
-                  <option value="count">Count</option>
-                </Select>
-              </Box>
-            </Flex>
-          )}
-
-          <AnimatePresence mode="wait">
-            <MotionBox
-              key={activeTab}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              {activeTab === 'fraud' && (
-                <VStack spacing={4} align="stretch">
-                  <Box p={4} borderWidth={1} borderRadius="lg">
-                    <Heading as="h3" size="md" mb={2}>Transaction Amount vs Balance Difference</Heading>
-                    <Box height="400px">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                          <CartesianGrid />
-                          <XAxis type="number" dataKey="x" name="Amount" unit="$" />
-                          <YAxis type="number" dataKey="y" name="Balance Difference" unit="$" />
-                          <ZAxis type="number" dataKey="z" range={[50, 400]} name="Fraud" unit="" />
-                          <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-                          <Legend />
-                          <Scatter name="Transactions" data={getScatterData()} fill="#8884d8" />
-                        </ScatterChart>
-                      </ResponsiveContainer>
-                    </Box>
-                  </Box>
-                  <Grid templateColumns="repeat(3, 1fr)" gap={4}>
-                    <GridItem>
-                      <Box p={4} borderWidth={1} borderRadius="lg">
-                        <Heading as="h3" size="md" mb={2}>Fraud Transactions</Heading>
-                        <Text fontSize="3xl" fontWeight="bold">{getFraudStats().count}</Text>
-                      </Box>
-                    </GridItem>
-                    <GridItem>
-                      <Box p={4} borderWidth={1} borderRadius="lg">
-                        <Heading as="h3" size="md" mb={2}>Total Fraud Amount</Heading>
-                        <Text fontSize="3xl" fontWeight="bold">${getFraudStats().amount}</Text>
-                      </Box>
-                    </GridItem>
-                    <GridItem>
-                      <Box p={4} borderWidth={1} borderRadius="lg">
-                        <Heading as="h3" size="md" mb={2}>Fraud Percentage</Heading>
-                        <Text fontSize="3xl" fontWeight="bold">{getFraudStats().percentage}%</Text>
-                      </Box>
-                    </GridItem>
-                  </Grid>
-                </VStack>
-              )}
-
-              {activeTab === 'transactions' && (
-                <VStack spacing={4} align="stretch">
-                  <Box p={4} borderWidth={1} borderRadius="lg">
-                    <Heading as="h2" size="md" mb={2}>Transaction Types Distribution</Heading>
-                    <Box height="300px">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={getTransactionTypes()}
-                            dataKey="value"
-                            nameKey="name"
-                            cx="50%"
-                            cy="50%"
-                            outerRadius={80}
-                            fill="#8884d8"
-                            label
-                          >
-                            {getTransactionTypes().map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <Tooltip />
-                          <Legend />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </Box>
-                  </Box>
-                  <Grid templateColumns="repeat(4, 1fr)" gap={4}>
-                    <GridItem>
-                      <Box p={4} borderWidth={1} borderRadius="lg">
-                        <Heading as="h2" size="md" mb={2}>Total Transaction Amount</Heading>
-                        <Text fontSize="3xl" fontWeight="bold">${getTotalAmount()}</Text>
-                      </Box>
-                    </GridItem>
-                    <GridItem>
-                      <Box p={4} borderWidth={1} borderRadius="lg">
-                        <Heading as="h2" size="md" mb={2}>Average Transaction Amount</Heading>
-                        <Text fontSize="3xl" fontWeight="bold">${getAverageAmount()}</Text>
-                      </Box>
-                    </GridItem>
-                    <GridItem>
-                      <Box p={4} borderWidth={1} borderRadius="lg">
-                        <Heading as="h2" size="md" mb={2}>Total Transactions</Heading>
-                        <Text fontSize="3xl" fontWeight="bold">{filteredData.length}</Text>
-                      </Box>
-                    </GridItem>
-                    <GridItem>
-                      <Box p={4} borderWidth={1} borderRadius="lg">
-                        <Heading as="h2" size="md" mb={2}>Unique Countries</Heading>
-                        <Text fontSize="3xl" fontWeight="bold">{new Set(filteredData.map(item => item.country)).size}</Text>
-                      </Box>
-                    </GridItem>
-                  </Grid>
-                </VStack>
-              )}
-
-              {activeTab === 'model' && (
+          <MotionBox
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            {activeTab === 0 && (
+              <VStack spacing={4} align="stretch">
                 <Box p={4} borderWidth={1} borderRadius="lg">
-                  <Heading as="h2" size="md" mb={2}>Model Information</Heading>
-                  <Text>This tab is currently blank and will contain model information in the future.</Text>
-                </Box>
-              )}
-
-{activeTab === 'documentation' && (
-                <Box p={4} borderWidth={1} borderRadius="lg">
-                  <Heading as="h2" size="md" mb={2}>Documentation</Heading>
-                  <Box 
-                    borderWidth={1}
-                    borderRadius="md"
-                    height="600px"
-                    overflow="hidden"
-                  >
-                    <embed 
-                      src={`${process.env.PUBLIC_URL}/placeholder.pdf`}
-                      type="application/pdf"
-                      width="100%"
-                      height="100%"
-                    />
+                  <Heading as="h3" size="md" mb={2}>Transaction Amount vs Balance Difference</Heading>
+                  <Box height="400px">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                        <CartesianGrid />
+                        <XAxis type="number" dataKey="x" name="Amount" unit="$" />
+                        <YAxis type="number" dataKey="y" name="Balance Difference" unit="$" />
+                        <ZAxis type="number" dataKey="z" range={[50, 400]} name="Fraud" unit="" />
+                        <Tooltip cursor={{ strokeDasharray: '3 3' }} />
+                        <Legend />
+                        <Scatter name="Transactions" data={getScatterData()} fill="#8884d8" />
+                      </ScatterChart>
+                    </ResponsiveContainer>
                   </Box>
                 </Box>
-              )}
-            </MotionBox>
-          </AnimatePresence>
+                <Grid templateColumns="repeat(3, 1fr)" gap={4}>
+                  <GridItem>
+                    <Box p={4} borderWidth={1} borderRadius="lg">
+                      <Heading as="h3" size="md" mb={2}>Fraud Transactions</Heading>
+                      <Text fontSize="3xl" fontWeight="bold">{getFraudStats().count}</Text>
+                    </Box>
+                  </GridItem>
+                  <GridItem>
+                    <Box p={4} borderWidth={1} borderRadius="lg">
+                      <Heading as="h3" size="md" mb={2}>Total Fraud Amount</Heading>
+                      <Text fontSize="3xl" fontWeight="bold">${getFraudStats().amount}</Text>
+                    </Box>
+                  </GridItem>
+                  <GridItem>
+                    <Box p={4} borderWidth={1} borderRadius="lg">
+                      <Heading as="h3" size="md" mb={2}>Fraud Percentage</Heading>
+                      <Text fontSize="3xl" fontWeight="bold">{getFraudStats().percentage}%</Text>
+                    </Box>
+                  </GridItem>
+                </Grid>
+              </VStack>
+            )}
+
+            {activeTab === 1 && (
+              <VStack spacing={4} align="stretch">
+                <Box p={4} borderWidth={1} borderRadius="lg">
+                  <Heading as="h2" size="md" mb={2}>Transaction Types Distribution</Heading>
+                  <Box height="300px">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={getTransactionTypes()}
+                          dataKey="value"
+                          nameKey="name"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          fill="#8884d8"
+                          label
+                        >
+                          {getTransactionTypes().map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </Box>
+                </Box>
+                <Grid templateColumns="repeat(4, 1fr)" gap={4}>
+                  <GridItem>
+                    <Box p={4} borderWidth={1} borderRadius="lg">
+                      <Heading as="h2" size="md" mb={2}>Total Transaction Amount</Heading>
+                      <Text fontSize="3xl" fontWeight="bold">${getTotalAmount()}</Text>
+                    </Box>
+                  </GridItem>
+                  <GridItem>
+                    <Box p={4} borderWidth={1} borderRadius="lg">
+                      <Heading as="h2" size="md" mb={2}>Average Transaction Amount</Heading>
+                      <Text fontSize="3xl" fontWeight="bold">${getAverageAmount()}</Text>
+                    </Box>
+                  </GridItem>
+                  <GridItem>
+                    <Box p={4} borderWidth={1} borderRadius="lg">
+                      <Heading as="h2" size="md" mb={2}>Total Transactions</Heading>
+                      <Text fontSize="3xl" fontWeight="bold">{filteredData.length}</Text>
+                    </Box>
+                  </GridItem>
+                  <GridItem>
+                    <Box p={4} borderWidth={1} borderRadius="lg">
+                      <Heading as="h2" size="md" mb={2}>Unique Countries</Heading>
+                      <Text fontSize="3xl" fontWeight="bold">{new Set(filteredData.map(item => item.country)).size}</Text>
+                    </Box>
+                  </GridItem>
+                </Grid>
+              </VStack>
+            )}
+
+            {activeTab === 2 && (
+              <Box p={4} borderWidth={1} borderRadius="lg">
+                <Heading as="h2" size="md" mb={2}>Model Information</Heading>
+                <Text>This tab is currently blank and will contain model information in the future.</Text>
+              </Box>
+            )}
+
+            {activeTab === 3 && (
+              <Box p={4} borderWidth={1} borderRadius="lg">
+                <Heading as="h2" size="md" mb={2}>Documentation</Heading>
+                <Text>This tab is currently blank and will contain documentation in the future.</Text>
+              </Box>
+            )}
+          </MotionBox>
         </VStack>
       </Box>
     </ChakraProvider>
   );
-};
+}
 
-export default Dashboard;
+export default App;
