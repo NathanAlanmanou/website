@@ -335,7 +335,7 @@ function App() {
                 <Heading as="h2" size="md" mb={2}>Documentation</Heading>
                 <Box height="600px" width="100%">
                   <iframe
-                    src="/7-12 Transaction Fraud Model Documentation.pdf"
+                    src="/7.12 Transaction Fraud Model Documentation.pdf"
                     width="100%"
                     height="100%"
                     style={{ border: "none" }}
