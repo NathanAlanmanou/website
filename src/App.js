@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChakraProvider, Box, VStack, Heading, Tabs, TabList, Tab, Text, Flex, extendTheme, Tooltip, Grid, Image } from "@chakra-ui/react";
+import { ChakraProvider, Box, VStack, Heading, Tabs, TabList, Tab, Text, Flex, extendTheme, Tooltip, Grid} from "@chakra-ui/react";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, Tooltip as RechartsTooltip } from 'recharts';
 import { motion } from "framer-motion";
 import { InfoIcon } from '@chakra-ui/icons';
