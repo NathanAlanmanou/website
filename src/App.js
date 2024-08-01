@@ -42,8 +42,8 @@ const theme = extendTheme({
 function App() {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [startDate, setStartDate] = useState('2024-06-29T09:46:32');
-  const [endDate, setEndDate] = useState('2024-07-01T00:00:00');
+  const [startDate, setStartDate] = useState('2024-07-30T09:46:32');
+  const [endDate, setEndDate] = useState('2024-08-01T00:00:00');
   const [activeTab, setActiveTab] = useState(0);
 
   const parseDate = (dateString) => {
@@ -53,7 +53,7 @@ function App() {
 
   useEffect(() => {
     // Fetch and parse the CSV file
-    fetch('/transactions refreshed 7-1.csv')
+    fetch('/transactions refreshed 8-1.csv')
       .then(response => response.text())
       .then(csvString => {
         Papa.parse(csvString, {
@@ -238,7 +238,7 @@ function App() {
                     <Box flex={1} /> {/* This empty box pushes the title to the center */}
                     <Heading as="h3" size="md" textAlign="center" flex={2}>Reported Transactions</Heading>
                     <Text fontSize="sm" color="gray.500" fontStyle="italic" flex={1} textAlign="right">
-                      last refreshed July 1st 12:00:00 AM
+                      last refreshed August 1st 12:00:00 AM
                     </Text>
                   </Flex>
                   <Box height="400px">
