@@ -42,8 +42,8 @@ const theme = extendTheme({
 function App() {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [startDate, setStartDate] = useState('2024-07-30T09:46:32');
-  const [endDate, setEndDate] = useState('2024-08-01T00:00:00');
+  const [startDate, setStartDate] = useState('2024-08-30T09:46:32');
+  const [endDate, setEndDate] = useState('2024-09-01T00:00:00');
   const [activeTab, setActiveTab] = useState(0);
 
   const parseDate = (dateString) => {
@@ -53,7 +53,7 @@ function App() {
 
   useEffect(() => {
     // Fetch and parse the CSV file
-    fetch('/transactions refreshed 8-1.csv')
+    fetch('/transactions refreshed 9-1.csv')
       .then(response => response.text())
       .then(csvString => {
         Papa.parse(csvString, {
