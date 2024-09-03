@@ -238,7 +238,7 @@ function App() {
                     <Box flex={1} /> {/* This empty box pushes the title to the center */}
                     <Heading as="h3" size="md" textAlign="center" flex={2}>Reported Transactions</Heading>
                     <Text fontSize="sm" color="gray.500" fontStyle="italic" flex={1} textAlign="right">
-                      last refreshed August 1st 12:00:00 AM
+                      last refreshed September 1st 12:00:00 AM
                     </Text>
                   </Flex>
                   <Box height="400px">
